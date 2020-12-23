@@ -38,10 +38,12 @@ HANGMAN_PICS = ['''
 
 words = 'ant babboon badger bat bear beaver camel cat clam cobra cougar coyote crow deer dog donkey duck eagle ferret fox frog goat goose hawk lion lizard llama mole monkey moose mouse mule newt otter owl panda parrot pigeon python rabbit ram rat raven rhino salmon seal shark sheep skunk sloth snake spider stork swan tiger toad trout turkey turtle weasel whale wolf wombat zebra'.split()
 
+
 def getRandomWord(wordList):
     # This function returns a random string from the passed list of strings.
     wordIndex = random.randint(0, len(wordList) - 1)
     return wordList[wordIndex]
+
 
 def displayBoard(missedLetters, correctLetters, secretWord):
     print(HANGMAN_PICS[len(missedLetters)])
@@ -54,13 +56,15 @@ def displayBoard(missedLetters, correctLetters, secretWord):
 
     blanks = '_' * len(secretWord)
 
-    for i in range(len(secretWord)): # Replace blanks with correctly guessed letters.
+    # Replace blanks with correctly guessed letters.
+    for i in range(len(secretWord)):
         if secretWord[i] in correctLetters:
             blanks = blanks[:i] + secretWord[i] + blanks[i+1:]
 
-    for letter in blanks: # Show the secret word with spaces in between each letter
+    for letter in blanks:  # Show the secret word with spaces in between each letter
         print(letter, end=' ')
     print()
+
 
 def getGuess(alreadyGuessed):
     # Returns the letter the player entered. This funciton makes sure the player entered a single letter and not something else.
@@ -75,12 +79,14 @@ def getGuess(alreadyGuessed):
         elif guess not in 'abcdefghijklmnopqrstuvwxyz':
             print('Please enter a LETTER.')
         else:
-            return guess 
+            return guess
+
 
 def playAgain():
     # This function returns True if the player wants to play agian; otherwise, it returns False.
     print('Do you want to play again? (yes or no)')
     return input().lower().startswith('y')
+
 
 print('H A N G M A N')
 missedLetters = ''
@@ -112,7 +118,8 @@ while True:
         # Check if player has guessed too many times and lost.
         if len(missedLetters) == len(HANGMAN_PICS) - 1:
             displayBoard(missedLetters, correctLetters, secretWord)
-            print(f'You have run out of guesses!\nAfter {len(missedLetters)} missed guesses and {len(correctLetters)} correct guesses, the word was "{secretWord}"')
+            print(
+                f'You have run out of guesses!\nAfter {len(missedLetters)} missed guesses and {len(correctLetters)} correct guesses, the word was "{secretWord}"')
             gameIsDone = True
 
     # Ask the player if they want to play agian (but only if the game is done)
