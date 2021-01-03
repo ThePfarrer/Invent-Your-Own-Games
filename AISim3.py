@@ -175,7 +175,7 @@ def get_player_move(board, player_tile):
     return [x, y]
 
 
-def get_computer_move(board, computer_tile):
+def get_corner_best_move(board, computer_tile):
     # Given a board and the computer's tile, determine where to
     # move and return that move as an [x, y] list.
     possible_moves = get_valid_moves(board, computer_tile)
@@ -196,6 +196,51 @@ def get_computer_move(board, computer_tile):
             best_move = [x, y]
             best_score = score
     return best_move
+
+
+def get_worst_move(board, tile):
+    # Return the move that flips the least number of tiles.
+    possible_moves = get_valid_moves(board, tile)
+    random.shuffle(possible_moves)  # Randomize the order of the moves.
+
+    # Find the lowest-scoring move possible.
+    worst_score = 64
+    for x, y in possible_moves:
+        board_copy = get_board_copy(board)
+        make_move(board_copy, tile, x, y)
+        score = get_score_of_board(board_copy)[tile]
+        if score < worst_score:
+            worst_move = [x, y]
+            worst_score = score
+
+    return worst_move
+
+
+def get_random_move(board, tile):
+    possible_moves = get_valid_moves(board, tile)
+    return random.choice(possible_moves)
+
+
+def is_on_side(x, y):
+    return x == 0 or x == WIDTH - 1 or y == 0 or y == HEIGHT - 1
+
+
+def get_corner_side_best_move(board, tile):
+    # Return a corner move, a side move, or the best move.
+    possible_moves = get_valid_moves(board, computer_tile)
+    random.shuffle(possible_moves)  # Randomize the order of the moves.
+
+    # Always go for a corner if available.
+    for x, y in possible_moves:
+        if is_on_corner(x, y):
+            return [x, y]
+
+    # If there is no corner move to make, return a side move.
+    for x, y in possible_moves:
+        if is_on_side(x, y):
+            return [x, y]
+
+    return get_corner_best_move(board, tile)  # Do what the normal AI would do.
 
 
 def print_score(board, player_tile, computer_tile):
@@ -224,56 +269,66 @@ def play_game(player_tile, computer_tile):
             return board  # No one can move, so end the game.
         elif turn == 'player':  # Player's turn
             if player_valid_moves != []:
-                if show_hints:
-                    valid_moves_board = get_board_with_valid_moves(
-                        board, player_tile)
-                    draw_board(valid_moves_board)
-                else:
-                    draw_board(board)
-                print_score(board, player_tile, computer_tile)
+                # if show_hints:
+                #     valid_moves_board = get_board_with_valid_moves(
+                #         board, player_tile)
+                #     draw_board(valid_moves_board)
+                # else:
+                #     draw_board(board)
+                # print_score(board, player_tile, computer_tile)
 
-                move = get_player_move(board, player_tile)
-                if move == 'quit':
-                    print('Thanks for playing!')
-                    sys.exit()  # Terminate the program.
-                elif move == 'hints':
-                    show_hints = not show_hints
-                    continue
-                else:
-                    make_move(board, player_tile, move[0], move[1])
+                move = get_corner_best_move(board, player_tile)
+                # if move == 'quit':
+                #     print('Thanks for playing!')
+                #     sys.exit()  # Terminate the program.
+                # elif move == 'hints':
+                #     show_hints = not show_hints
+                #     continue
+                # else:
+                make_move(board, player_tile, move[0], move[1])
             turn = 'computer'
 
         elif turn == 'computer':  # Computer's turn
             if computer_valid_moves != []:
-                draw_board(board)
-                print_score(board, player_tile, computer_tile)
+                # draw_board(board)
+                # print_score(board, player_tile, computer_tile)
 
-                input('Press Enter to see the computer\'s move.')
-                move = get_computer_move(board, computer_tile)
+                # input('Press Enter to see the computer\'s move.')
+                move = get_corner_side_best_move(board, computer_tile)
                 make_move(board, computer_tile, move[0], move[1])
             turn = 'player'
 
 
+NUM_GAMES = 1000
+x_wins = o_wins = ties = 0
 print('Welcome to Reversegam!')
 
-player_tile, computer_tile = enter_player_tile()
+player_tile, computer_tile = ['X', 'O']  # enter_player_tile()
 
-while True:
+for i in range(NUM_GAMES):  # while True:
     final_board = play_game(player_tile, computer_tile)
 
     # Display the final score.
-    draw_board(final_board)
+    # draw_board(final_board)
     scores = get_score_of_board(final_board)
-    print(f"X scored {scores['X']} points. O scored {scores['O']} points.")
+    print(
+        f"#{i + 1 }: X scored {scores['X']} points. O scored {scores['O']} points.")
     if scores[player_tile] > scores[computer_tile]:
-        print(
-            f'You beat the computer by {scores[player_tile] - scores[computer_tile]} points! Congratulations!')
+        x_wins += 1
+        # print(
+        #     f'You beat the computer by {scores[player_tile] - scores[computer_tile]} points! Congratulations!')
     elif scores[player_tile] < scores[computer_tile]:
-        print(
-            f'You lost. The computer beat you by {scores[computer_tile] - scores[player_tile]} points!')
+        o_wins += 1
+        # print(
+        #     f'You lost. The computer beat you by {scores[computer_tile] - scores[player_tile]} points!')
     else:
-        print('The game was a tie!')
+        ties += 1
+        # print('The game was a tie!')
 
-    print('Do you want to play again? (yes or no)')
-    if not input().lower().startswith('y'):
-        break
+    # print('Do you want to play again? (yes or no)')
+    # if not input().lower().startswith('y'):
+    #     break
+
+print(f'X wins: {x_wins} ({round(x_wins / NUM_GAMES * 100, 1)}%)')
+print(f'O wins: {o_wins} ({round(o_wins / NUM_GAMES * 100, 1)}%)')
+print(f'Ties: {ties} ({round(ties / NUM_GAMES * 100, 1)}%)')
